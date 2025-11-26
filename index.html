@@ -483,9 +483,35 @@
 
     </div>
 
-    <!-- APP SCRIPT - Using localStorage & Gemini API -->
+    <!-- Firebase SDKs (compat for easier integration with this codebase) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <script>
-        // --- HARDCODED CREDENTIALS ---
+        // Firebase Configuration provided by the user
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2V53PQ1jEWPoQ-trZT4XmMMhqTJTi9w8",
+            authDomain: "edustarhub-25dbf.firebaseapp.com",
+            projectId: "edustarhub-25dbf",
+            storageBucket: "edustarhub-25dbf.firebasestorage.app",
+            messagingSenderId: "929511763188",
+            appId: "1:929511763188:web:b0ad8007467a51e8cc82a1",
+            measurementId: "G-E78YNJ7SYX"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        // eslint-disable-next-line no-unused-vars
+        const analytics = (firebase.analytics && firebase.analytics()) || null;
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storageRef = firebase.storage().ref();
+    </script>
+
+    <!-- APP SCRIPT - Using Firebase Auth + Firestore + Gemini API -->
+    <script>
+        // --- HARDCODED CREDENTIALS (kept only for quick role selection and display) ---
         const CREDENTIALS = {
             student: { username: 'EDU-Star1', password: 'EDU-Star1', displayName: 'GCSE Student' },
             teacher: { username: 'EDU-admin4', password: 'EDU-admin4', displayName: 'Admin Teacher' }
@@ -564,6 +590,7 @@
 
         // --- GLOBAL STATE ---
         let userRole = 'student'; // Default role for login screen
+        let currentUser = null; // Firebase user object
 
         // --- UTILITY FUNCTIONS ---
         function showLoading(show) {
@@ -636,14 +663,13 @@
             document.getElementById('login-role-text').textContent = role.charAt(0).toUpperCase() + role.slice(1);
         }
 
-        function handleSubmitLogin(e) {
+        async function handleSubmitLogin(e) {
             e.preventDefault();
-            const usernameInput = document.getElementById('username').value.trim();
+            const usernameInput = document.getElementById('username') ? document.getElementById('username').value.trim() : '';
             const passwordInput = document.getElementById('password').value;
             const errorMsg = document.getElementById('auth-error-message');
             errorMsg.classList.add('hidden');
             showLoading(true);
-
             const requiredCreds = CREDENTIALS[userRole];
             let isAuthenticated = false;
             let displayName = 'User';
@@ -656,21 +682,20 @@
             }
 
             if (!isAuthenticated) {
-                 errorMsg.textContent = `Invalid credentials for ${userRole}. Please use the specific ${userRole} username and password.`;
-                 errorMsg.classList.remove('hidden');
-                 showLoading(false);
-                 return;
+                errorMsg.textContent = `Invalid credentials for ${userRole}. Please use the specific ${userRole} username and password.`;
+                errorMsg.classList.remove('hidden');
+                showLoading(false);
+                return;
             }
 
             try {
-                // Authentication successful using hardcoded values
-                localStorage.setItem('edustarhub_is_logged_in', 'true');
-                localStorage.setItem('edustarhub_user_role', userRole);
-                localStorage.setItem('edustarhub_user_name', displayName);
+                // Sign-in anonymously to Firebase so we can read/write resources
+                const authResult = await auth.signInAnonymously();
+                currentUser = authResult.user;
 
+                // Use the local cred's displayName for the UI
                 setupDashboard(userRole, displayName);
                 changeView('dashboard');
-
             } catch (error) {
                 console.error("Auth Error:", error);
                 errorMsg.textContent = "An internal authentication error occurred. Please try again.";
@@ -680,38 +705,20 @@
             }
         }
         
-        function handleLogout() {
+        async function handleLogout() {
             showLoading(true);
-            localStorage.removeItem('edustarhub_is_logged_in');
-            localStorage.removeItem('edustarhub_user_role');
-            localStorage.removeItem('edustarhub_user_name');
-            
-            userRole = 'student'; 
+            try {
+                await auth.signOut();
+            } catch (e) {
+                console.warn('Error signing out:', e);
+            }
+            userRole = 'student';
+            currentUser = null;
             changeView('landing');
             showLoading(false);
         }
 
-        function checkLocalStorageAuth() {
-            showLoading(true);
-            const isLoggedIn = localStorage.getItem('edustarhub_is_logged_in') === 'true';
-            
-            if (isLoggedIn) {
-                const storedRole = localStorage.getItem('edustarhub_user_role');
-                const storedName = localStorage.getItem('edustarhub_user_name');
-                
-                if (storedRole && storedName) {
-                    userRole = storedRole;
-                    setupDashboard(storedRole, storedName);
-                    changeView('dashboard');
-                } else {
-                    localStorage.clear();
-                    changeView('landing');
-                }
-            } else {
-                changeView('landing');
-            }
-            showLoading(false);
-        }
+        // We no longer use localStorage for auth state. Firebase auth is used instead.
         
         /**
          * Initializes the dashboard based on user role.
@@ -803,34 +810,37 @@
 
         // --- LOCAL STORAGE RESOURCE MANAGEMENT ---
 
-        function getResources() {
-            const resourcesJson = localStorage.getItem('edustarhub_resources');
-            return resourcesJson ? JSON.parse(resourcesJson) : [];
-        }
-
-        function saveResources(resources) {
-            localStorage.setItem('edustarhub_resources', JSON.stringify(resources));
-        }
+        // Resources are now stored in Firestore; localStorage removed.
         
         /**
          * Renders content lists based on the view key.
          * @param {string} viewKey - 'dashboard', 'resources', or 'assessments'
          */
-        function loadContentLists(viewKey) {
-            const allResources = getResources().sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-            const studyResources = allResources.filter(r => r.type === 'resource');
-            const assessments = allResources.filter(r => r.type === 'assessment');
+        async function loadContentLists(viewKey) {
+            showLoading(true);
+            try {
+                const snapshot = await db.collection('resources').orderBy('uploadedAt', 'desc').get();
+                const allResources = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                const studyResources = allResources.filter(r => r.type === 'resource');
+                const assessments = allResources.filter(r => r.type === 'assessment');
 
-            if (viewKey === 'dashboard') {
-                // Renders only the top 3 items for preview
-                renderList(assessments.slice(0, 3), 'dashboard-assessment-list');
-                renderList(studyResources.slice(0, 3), 'dashboard-resource-list');
-            } else if (viewKey === 'resources') {
-                // Renders all resources
-                renderList(studyResources, 'full-resource-list');
-            } else if (viewKey === 'assessments') {
-                // Renders all assessments
-                renderList(assessments, 'full-assessment-list');
+                if (viewKey === 'dashboard') {
+                    renderList(assessments.slice(0, 3), 'dashboard-assessment-list');
+                    renderList(studyResources.slice(0, 3), 'dashboard-resource-list');
+                } else if (viewKey === 'resources') {
+                    renderList(studyResources, 'full-resource-list');
+                } else if (viewKey === 'assessments') {
+                    renderList(assessments, 'full-assessment-list');
+                }
+            } catch (error) {
+                console.error('Failed to load resources from Firestore:', error);
+                // Show fallback message
+                renderList([], 'dashboard-assessment-list');
+                renderList([], 'dashboard-resource-list');
+                renderList([], 'full-resource-list');
+                renderList([], 'full-assessment-list');
+            } finally {
+                showLoading(false);
             }
         }
         
@@ -874,7 +884,12 @@
                 itemType = 'Assessment';
             }
 
-            item.setAttribute('onclick', `showMessage('You clicked the ${itemType}: ${resource.title}. Due to local storage limitations, the actual file cannot be opened or downloaded.')`);
+            // If fileUrl is present, open it; otherwise show message
+            if (resource.fileUrl) {
+                item.addEventListener('click', () => window.open(resource.fileUrl, '_blank'));
+            } else {
+                item.setAttribute('onclick', `showMessage('You clicked the ${itemType}: ${resource.title}. The file URL is not available.')`);
+            }
 
             item.innerHTML = `
                 <div class="p-3 ${bgColor} ${textColor} rounded-xl mr-4 flex-shrink-0">
@@ -923,29 +938,39 @@
                 if (!file) {
                     throw new Error(`Please select a file to upload for the ${type}.`);
                 }
-                
+
+                // Upload file to Firebase Storage
+                const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
+                const path = `resources/${safeFileName}`;
+                const fileRef = storageRef.child(path);
+
+                const uploadTaskSnapshot = await fileRef.put(file);
+                const downloadUrl = await uploadTaskSnapshot.ref.getDownloadURL();
+
                 const newResource = {
                     type: type, // 'resource' or 'assessment'
                     title: title,
                     subject: subject,
                     fileName: file.name,
                     fileType: file.type,
-                    fileSize: file.size, 
+                    fileSize: file.size,
                     description: description,
-                    uploadedAt: new Date().toISOString()
+                    fileUrl: downloadUrl,
+                    uploadedAt: new Date().toISOString(),
+                    uploaderRole: userRole,
+                    uploaderId: currentUser ? currentUser.uid : null
                 };
 
-                const currentResources = getResources();
-                currentResources.push(newResource);
-                saveResources(currentResources);
+                // Save metadata to Firestore
+                await db.collection('resources').add(newResource);
 
                 statusMsg.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} metadata for '${file.name}' published successfully!`;
                 statusMsg.classList.remove('hidden');
                 statusMsg.classList.add('text-green-600');
-                
                 document.getElementById(`upload-${type}-form`).reset();
-                
-                
+
+                // Refresh lists
+                loadContentLists('dashboard');
             } catch (error) {
                 console.error("Upload failed:", error);
                 statusMsg.textContent = `Upload failed: ${error.message}`;
@@ -1083,7 +1108,20 @@
             document.getElementById('upload-resource-form').addEventListener('submit', (e) => handleUpload(e, 'resource'));
             document.getElementById('upload-assessment-form').addEventListener('submit', (e) => handleUpload(e, 'assessment'));
             
-            checkLocalStorageAuth();
+            // Use Firebase auth state to determine whether to show dashboard or landing
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    const displayName = (CREDENTIALS[userRole] && CREDENTIALS[userRole].displayName) || user.displayName || 'User';
+                    setupDashboard(userRole, displayName);
+                    changeView('dashboard');
+                    // Load content for dashboard
+                    loadContentLists('dashboard');
+                } else {
+                    currentUser = null;
+                    changeView('landing');
+                }
+            });
         });
     </script>
 </body>
