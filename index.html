@@ -1,1175 +1,581 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EDUSTARHUB - GCSE Success</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-purple: #6b46c1; /* Tailwind violet-700/800 */
-            --secondary-pink: #d946ef; /* Tailwind fuchsia-500 */
-            --dashboard-bg: #f7fafc; /* Tailwind gray-50 */
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7fafc;
-        }
-        .landing-gradient {
-            background: linear-gradient(135deg, #a78bfa 0%, #d946ef 100%);
-        }
-        .btn-primary {
-            background-color: var(--secondary-pink);
-            transition: background-color 0.2s;
-        }
-        .btn-primary:hover {
-            background-color: #c026d3; /* Slightly darker pink */
-        }
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-        /* Adjusted grid for side navigation */
-        @media (min-width: 1024px) {
-            .dashboard-grid {
-                grid-template-columns: 300px 1fr; /* Sidebar width + Main content */
-            }
-        }
-        /* Custom scrollbar for resource list */
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: rgba(107, 70, 193, 0.5);
-            border-radius: 3px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: rgba(247, 250, 252, 0.5);
-        }
-        /* Interactive Card Styling */
-        .interactive-card {
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .interactive-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EDUSTARHUB - GCSE Success</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary-purple: #6b46c1; --secondary-pink: #d946ef; --dashboard-bg: #f7fafc; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--dashboard-bg); }
+    .landing-gradient { background: linear-gradient(135deg, #a78bfa 0%, #d946ef 100%); }
+    .btn-primary { background-color: var(--secondary-pink); transition: background-color 0.2s; }
+    .btn-primary:hover { background: #c026d3; }
+    .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (min-width: 1024px) { .dashboard-grid { grid-template-columns: 300px 1fr; } }
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .interactive-card { cursor: pointer; transition: transform .2s, box-shadow .2s; }
+    .interactive-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05); }
+  </style>
 </head>
 <body class="min-h-screen">
+  <div id="app" class="relative">
 
-    <!-- All views are controlled by JS and hidden/shown based on 'data-view' attribute -->
-    <div id="app" class="relative">
+    <!-- Landing -->
+    <section id="view-landing" data-view="landing" class="landing-gradient min-h-screen p-4 lg:p-12 hidden">
+      <header class="flex justify-between items-center text-white">
+        <div class="text-2xl font-extrabold tracking-tight">EDUSTARHUB</div>
+        <button onclick="changeView('login')" class="bg-white text-violet-700 font-bold py-2 px-4 rounded-lg shadow-md">Get Started</button>
+      </header>
 
-        <!-- 1. LANDING PAGE -->
-        <section id="view-landing" data-view="landing" class="landing-gradient min-h-screen p-4 lg:p-12 hidden">
-            <header class="flex justify-between items-center text-white">
-                <div class="text-2xl font-extrabold tracking-tight">EDUSTARHUB</div>
-                <button onclick="changeView('login')" class="bg-white text-violet-700 font-bold py-2 px-4 rounded-lg shadow-md hover:bg-gray-100 transition duration-150">
-                    Get Started
-                </button>
-            </header>
-
-            <div class="flex flex-col lg:flex-row items-center justify-between mt-16 lg:mt-24 max-w-7xl mx-auto">
-                <!-- Left Content Area (Text) -->
-                <div class="lg:w-1/2 text-white">
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
-                        Master Your GCSEs.
-                        <span class="block text-gray-200 mt-2">Smarter Study, Better Grades.</span>
-                    </h1>
-                    <p class="mt-4 text-lg text-gray-200 max-w-md">
-                        Your central hub for high-quality, curated resources and personalized learning plans designed specifically for AQA, Edexcel, and OCR GCSE specifications.
-                    </p>
-                    <div class="mt-8">
-                        <button onclick="changeView('login')" class="btn-primary text-white font-bold py-3 px-8 rounded-xl text-lg shadow-lg hover:shadow-xl transition duration-300">
-                            Start Learning Now
-                        </button>
-                        <p class="mt-2 text-sm text-gray-200 flex items-center">
-                            <svg class="w-4 h-4 mr-1 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-8a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1zM9 7a1 1 0 112 0 1 1 0 01-2 0z" clip-rule="evenodd" />
-                            </svg>
-                            Trusted by thousands of GCSE students.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Right Content Area (Mock Illustration) -->
-                <div class="lg:w-1/2 mt-12 lg:mt-0 flex justify-center relative">
-                    <div class="w-full max-w-lg h-80 bg-violet-900 bg-opacity-30 rounded-3xl shadow-2xl flex items-center justify-center p-6 transform hover:scale-[1.02] transition duration-500">
-                        <svg class="w-3/4 h-3/4 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20h4M4 8h16M7 16h10M12 4v16m-4-4l4-4 4 4" />
-                        </svg>
-                        <div class="absolute inset-0 bg-contain bg-center opacity-20" style="background-image: url('https://placehold.co/600x400/8b5cf6/ffffff?text=Study+Success');"></div>
-                        <span class="absolute text-xl font-bold text-white z-10">Personalized Study Path</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bottom Section -->
-            <div class="max-w-7xl mx-auto mt-20 lg:mt-32 p-4 bg-white bg-opacity-10 rounded-2xl shadow-inner backdrop-blur-sm">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    <div>
-                        <h2 class="text-3xl font-bold text-white">Curated Subject Libraries</h2>
-                        <p class="mt-3 text-gray-200">
-                            Stop wasting time searching the web. We provide direct access to thousands of resources verified by qualified teachers for core subjects like Maths, English, and Science.
-                        </p>
-                        <button onclick="changeView('login')" class="btn-primary text-white font-semibold mt-4 py-2 px-6 rounded-lg text-sm shadow">
-                            View Subjects
-                        </button>
-                    </div>
-                    <div>
-                        <h2 class="text-3xl font-bold text-white">Track Your Progress</h2>
-                        <p class="mt-3 text-gray-200">
-                            Use our intuitive dashboard to see your day streak, total points, and completion rates, keeping you motivated and on track for exam success.
-                        </p>
-                        <p class="mt-2 text-sm text-yellow-300">
-                            (See the dashboard after login!)
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 2. LOGIN PAGE -->
-        <section id="view-login" data-view="login" class="landing-gradient min-h-screen flex items-center justify-center p-4 hidden">
-            <div id="auth-card" class="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 w-full max-w-md">
-                <h2 class="text-3xl font-extrabold text-gray-900 text-center">EDUSTARHUB Portal</h2>
-                <p class="mt-2 mb-8 text-center text-gray-500">Access your personalized GCSE learning journey.</p>
-                
-                <div class="border-b mb-6 pb-4">
-                    <div class="flex bg-gray-100 rounded-xl p-1">
-                        <button id="tab-student" data-role="student" onclick="setAuthRole('student')" class="flex-1 py-3 text-center text-sm font-semibold rounded-lg transition-all duration-300 bg-violet-600 text-white shadow-md">
-                            Student Login
-                        </button>
-                        <button id="tab-teacher" data-role="teacher" onclick="setAuthRole('teacher')" class="flex-1 py-3 text-center text-sm font-semibold rounded-lg transition-all duration-300 text-gray-600 hover:text-violet-600">
-                            Teacher Login
-                        </button>
-                    </div>
-                </div>
-
-                <form id="login-form">
-                    <div class="mb-5">
-                        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-                        <div class="mt-1 relative rounded-lg shadow-sm">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <input type="text" id="username" name="username" placeholder="Enter specific username" required class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-violet-500 focus:border-violet-500 sm:text-sm">
-                        </div>
-                    </div>
-
-                    <div class="mb-8">
-                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                        <div class="mt-1 relative rounded-lg shadow-sm">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 8a2 2 0 00-2-2h-1V5a3 3 0 00-3-3H8a3 3 0 00-3 3v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8zm-2 0h-2v2H6V8H4v10h12V8z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <input type="password" id="password" name="password" placeholder="••••••••" required class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-violet-500 focus:border-violet-500 sm:text-sm">
-                        </div>
-                    </div>
-
-                    <button type="submit" id="login-btn" class="w-full btn-primary text-white font-bold py-3 rounded-xl text-lg shadow-md hover:shadow-lg transition duration-150">
-                        Sign In as <span id="login-role-text">Student</span>
-                    </button>
-                </form>
-
-                <p id="auth-error-message" class="mt-4 text-center text-sm text-red-600 hidden"></p>
-                <p class="mt-6 text-center text-sm text-gray-500">
-                    Trouble logging in? <a href="#" class="font-medium text-violet-600 hover:text-violet-500">Contact support</a>
-                </p>
-                <button onclick="changeView('landing')" class="mt-4 w-full text-sm text-violet-600 hover:text-violet-500">
-                    ← Back to Home
-                </button>
-            </div>
-        </section>
-
-        <!-- 3. DASHBOARD -->
-        <section id="view-dashboard" data-view="dashboard" class="min-h-screen p-4 lg:p-8 bg-dashboard-bg hidden">
-            <!-- Dashboard Header/Navigation - Simplified -->
-            <header class="flex justify-between items-center bg-white p-4 rounded-xl shadow-lg mb-8 sticky top-0 z-10">
-                <div class="text-2xl font-extrabold text-violet-700">EDUSTARHUB</div>
-                <div class="flex items-center space-x-3">
-                    <span id="user-name" class="text-sm font-semibold text-gray-700"></span>
-                    <span id="user-role" class="text-xs font-medium text-white px-2 py-1 rounded-full bg-fuchsia-500"></span>
-                    <button id="logout-btn" class="text-sm text-gray-500 hover:text-red-600 transition">Logout</button>
-                </div>
-            </header>
-
-            <!-- Dashboard Content Grid -->
-            <div id="dashboard-content" class="dashboard-grid max-w-7xl mx-auto">
-                <!-- Left Sidebar (Navigation & Progress) -->
-                <div id="dashboard-sidebar" class="bg-white p-6 rounded-2xl shadow-xl space-y-8 h-full sticky top-[6.5rem]">
-                    
-                    <!-- 1. Navigation Menu for Students (UPDATED) -->
-                    <div id="student-nav-menu">
-                        <h3 class="text-lg font-bold text-violet-700 mb-4">Study Menu</h3>
-                        <nav id="sidebar-nav-student" class="space-y-2 text-base">
-                            <!-- Dashboard -->
-                            <a href="#" onclick="handleNavClickStudent(this, 'dashboard')" data-nav="dashboard" class="flex items-center space-x-3 p-3 rounded-xl bg-violet-100 text-violet-700 font-bold">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10zm0 0l9-6 9 6M3 10V4a2 2 0 012-2h14a2 2 0 012 2v6"></path></svg>
-                                <span>Dashboard</span>
-                            </a>
-                            <!-- Resources -->
-                            <a href="#" onclick="handleNavClickStudent(this, 'resources')" data-nav="resources" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.832 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.168 18 16.5 18s-3.332.477-4.5 1.253"></path></svg>
-                                <span>Resources</span>
-                            </a>
-                            <!-- Quizzes / Exams -->
-                            <a href="#" onclick="handleNavClickStudent(this, 'quizzes')" data-nav="quizzes" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                <span>Quizzes / Exams</span>
-                            </a>
-                        </nav>
-                    </div>
-
-                    <!-- 1B. Navigation Menu for Teachers -->
-                    <div id="teacher-nav-menu" class="hidden">
-                         <h3 class="text-lg font-bold text-violet-700 mb-4">Management</h3>
-                         <nav id="sidebar-nav-teacher" class="space-y-2 text-base">
-                             <a href="#" onclick="handleNavClickTeacher(this, 'resources')" data-nav="resources" class="flex items-center space-x-3 p-3 rounded-xl bg-violet-100 text-violet-700 font-bold transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6a2 2 0 012-2h2a2 2 0 012 2v13m-5-4h4M9 8h4"></path></svg>
-                                <span>Resources</span>
-                            </a>
-                            <a href="#" onclick="handleNavClickTeacher(this, 'assessments')" data-nav="assessments" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 hover:bg-violet-50 hover:text-violet-700 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                <span>Quizzes/Exams</span>
-                            </a>
-                         </nav>
-                    </div>
-
-                    <!-- 2. Student Progress Section -->
-                    <div id="student-progress-section" class="space-y-4 pt-4 border-t border-gray-100">
-                        <h3 class="text-lg font-bold text-gray-800">Your Progress</h3>
-                        <div class="space-y-2 text-sm">
-                            <!-- Unit 1: Interactive -->
-                            <div onclick="handleUnitClick('Cells', '75%')" class="cursor-pointer interactive-card p-3 bg-green-50 rounded-xl hover:bg-green-100">
-                                <p class="font-semibold text-green-700">Unit 1: Cells (75%)</p>
-                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                    <div class="bg-green-500 h-1.5 rounded-full" style="width: 75%"></div>
-                                </div>
-                            </div>
-                            <!-- Unit 2: Interactive -->
-                            <div onclick="handleUnitClick('Forces', '40%')" class="cursor-pointer interactive-card p-3 bg-yellow-50 rounded-xl hover:bg-yellow-100">
-                                <p class="font-semibold text-yellow-700">Unit 2: Forces (40%)</p>
-                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                    <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 40%"></div>
-                                </div>
-                            </div>
-                            <!-- Unit 3: Interactive -->
-                            <div onclick="handleUnitClick('Energy', '10%')" class="cursor-pointer interactive-card p-3 bg-red-50 rounded-xl hover:bg-red-100">
-                                <p class="font-semibold text-red-700">Unit 3: Energy (10%)</p>
-                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                    <div class="bg-red-500 h-1.5 rounded-full" style="width: 10%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 3. Teacher specific view (Kept for optional future features, currently hidden) -->
-                    <div id="teacher-sidebar-info" class="space-y-4 pt-4 border-t border-gray-100 hidden">
-                        <h3 class="text-lg font-bold text-gray-800">Class Overview</h3>
-                        <div onclick="handleInteractiveClick('Class Roster')" class="cursor-pointer interactive-card p-4 bg-violet-50 rounded-xl hover:bg-violet-100 transition shadow-sm">
-                             <p class="font-semibold text-violet-700">View Class Roster (45 students)</p>
-                             <p class="text-sm text-violet-600">Click to view student activity logs.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Content Area -->
-                <div id="main-dashboard-area">
-                    <h2 class="text-2xl font-extrabold text-gray-900 mb-6">
-                        <span id="main-content-title">Your Today's Tasks</span>
-                    </h2>
-
-                    <!-- STUDENT VIEW: Main Content Container (Dynamic Switching) -->
-                    <div id="student-content-container">
-                        
-                        <!-- 3A. Dashboard View -->
-                        <div id="student-view-dashboard">
-                            <!-- Consolidated grid for better layout control -->
-                            <div class="grid grid-cols-1 gap-6"> 
-                                
-                                <!-- AI Study Assistant Card - FULL WIDTH & TALLER -->
-                                <div class="bg-violet-100 p-8 rounded-2xl shadow-xl col-span-full h-80 flex flex-col justify-end relative overflow-hidden">
-                                    <h3 class="text-3xl font-bold text-violet-800 z-10">AI Study Assistant</h3>
-                                    <p class="text-base text-violet-600 mt-2 z-10">Need a topic explained simply? Get instant, grounded help from the Gemini AI. Ask anything about your GCSE subjects!</p>
-                                    <div class="mt-8 flex flex-col sm:flex-row gap-4 z-10">
-                                        <input type="text" id="ai-topic-input" placeholder="e.g., Explain the stages of Mitosis" class="flex-grow p-4 rounded-xl text-lg border border-violet-300 focus:outline-none focus:ring-violet-500">
-                                        <button onclick="explainTopic()" id="ai-explain-btn" class="bg-violet-500 text-white py-3 px-8 rounded-xl text-lg font-bold hover:bg-violet-600 transition z-10 flex-shrink-0">
-                                            ✨ Explain Topic
-                                        </button>
-                                    </div>
-                                    <!-- Subtle background graphics for visual flair -->
-                                    <div class="absolute top-0 right-0 w-40 h-40 bg-violet-200 opacity-50 rounded-full blur-xl transform translate-x-1/2 -translate-y-1/4"></div>
-                                    <div class="absolute bottom-0 left-0 w-24 h-24 bg-violet-200 opacity-50 rounded-full blur-xl transform -translate-x-1/3 translate-y-1/3"></div>
-                                </div>
-                                
-                                <!-- Quizzes/Exams Section PREVIEW -->
-                                <div class="col-span-full mt-2">
-                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Practice Quizzes/Exams (Recent)</h3>
-                                    <div id="dashboard-assessment-list" class="bg-white p-4 rounded-2xl shadow-xl space-y-3 max-h-52 custom-scroll overflow-y-auto">
-                                        <p class="text-gray-500 text-center py-6">No assessments have been uploaded yet.</p>
-                                    </div>
-                                </div>
-
-                                <!-- Resources Section PREVIEW -->
-                                <div class="col-span-full mt-2">
-                                    <h3 class="text-xl font-bold text-gray-800 mb-4">New Study Resources (Recent)</h3>
-                                    <div id="dashboard-resource-list" class="bg-white p-4 rounded-2xl shadow-xl space-y-3 max-h-52 custom-scroll overflow-y-auto">
-                                        <p class="text-gray-500 text-center py-6" id="resources-loading-msg">No resources have been uploaded yet.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3B. Resources ONLY View -->
-                        <div id="student-view-resources" class="hidden">
-                             <div id="full-resource-list" class="bg-white p-4 rounded-2xl shadow-xl space-y-3 custom-scroll overflow-y-auto">
-                                <p class="text-gray-500 text-center py-6">Loading all resources...</p>
-                            </div>
-                        </div>
-
-                        <!-- 3C. Quizzes / Exams ONLY View -->
-                        <div id="student-view-quizzes" class="hidden">
-                             <div id="full-assessment-list" class="bg-white p-4 rounded-2xl shadow-xl space-y-3 custom-scroll overflow-y-auto">
-                                <p class="text-gray-500 text-center py-6">Loading all assessments...</p>
-                            </div>
-                        </div>
-
-                    </div>
-
-
-                    <!-- TEACHER VIEW: Resources Upload Area -->
-                    <div id="teacher-resources-content" class="hidden">
-                        <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
-                            <h3 class="text-xl font-bold text-gray-800">Upload New Study Resource (Files, Notes, Links)</h3>
-                            <form id="upload-resource-form" class="space-y-4">
-                                <div>
-                                    <label for="resource-title" class="block text-sm font-medium text-gray-700">Resource Title</label>
-                                    <input type="text" id="resource-title" required class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-violet-500 focus:border-violet-500 hover:border-violet-400 transition">
-                                </div>
-                                <div>
-                                    <label for="resource-subject" class="block text-sm font-medium text-gray-700">Subject/Unit</label>
-                                    <select id="resource-subject" required class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-violet-500 focus:border-violet-500 hover:border-violet-400 transition">
-                                        <option value="">Select a Subject</option>
-                                        <option value="Maths">Maths</option>
-                                        <option value="Science">Science (Combined/Triple)</option>
-                                        <option value="English">English Language/Literature</option>
-                                        <option value="History">History</option>
-                                    </select>
-                                </div>
-                                
-                                <!-- FILE UPLOAD INPUT -->
-                                <div>
-                                    <label for="resource-file" class="block text-sm font-medium text-gray-700">Select File to Upload</label>
-                                    <input type="file" id="resource-file" required class="mt-1 block w-full text-gray-700
-                                           file:mr-4 file:py-2 file:px-4
-                                           file:rounded-full file:border-0
-                                           file:text-sm file:font-semibold
-                                           file:bg-violet-50 file:text-violet-700
-                                           hover:file:bg-violet-100 cursor-pointer">
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        <span class="font-bold text-green-600">Note:</span> Uploaded files are stored in Firebase Storage and will be available to students via the dashboard.
-                                    </p>
-                                </div>
-
-                                <!-- DESCRIPTION WITH GEMINI BUTTON -->
-                                <div>
-                                    <label for="resource-description" class="block text-sm font-medium text-gray-700">Description</label>
-                                    <div class="flex items-center space-x-2">
-                                        <textarea id="resource-description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-violet-500 focus:border-violet-500 hover:border-violet-400 transition"></textarea>
-                                        <!-- GEMINI FEATURE BUTTON -->
-                                        <button type="button" onclick="draftDescription('resource')" id="draft-resource-desc-btn" class="bg-violet-500 text-white p-3 rounded-xl text-sm font-semibold hover:bg-violet-600 transition h-10 self-start mt-1 whitespace-nowrap">
-                                            ✨ Draft
-                                        </button>
-                                    </div>
-                                    <p id="draft-resource-desc-status" class="text-xs text-gray-500 mt-1 hidden">Generating description with Gemini...</p>
-                                </div>
-                                
-                                <button type="submit" id="upload-resource-btn" class="w-full btn-primary text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition duration-150">
-                                    Upload Resource
-                                </button>
-                                <p id="upload-resource-status" class="mt-2 text-center text-sm text-green-600 hidden"></p>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <!-- TEACHER VIEW: Assessments Upload Area (NEW) -->
-                    <div id="teacher-assessments-content" class="hidden">
-                        <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
-                            <h3 class="text-xl font-bold text-gray-800">Upload New Quiz / Exam Paper (Assessments)</h3>
-                            <form id="upload-assessment-form" class="space-y-4">
-                                <div>
-                                    <label for="assessment-title" class="block text-sm font-medium text-gray-700">Assessment Title (e.g., Biology End of Topic Test)</label>
-                                    <input type="text" id="assessment-title" required class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-fuchsia-500 focus:border-fuchsia-500 hover:border-fuchsia-400 transition">
-                                </div>
-                                <div>
-                                    <label for="assessment-subject" class="block text-sm font-medium text-gray-700">Subject/Unit</label>
-                                    <select id="assessment-subject" required class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-fuchsia-500 focus:border-fuchsia-500 hover:border-fuchsia-400 transition">
-                                        <option value="">Select a Subject</option>
-                                        <option value="Maths">Maths</option>
-                                        <option value="Science">Science (Combined/Triple)</option>
-                                        <option value="English">English Language/Literature</option>
-                                        <option value="History">History</option>
-                                    </select>
-                                </div>
-                                
-                                <!-- FILE UPLOAD INPUT -->
-                                <div>
-                                    <label for="assessment-file" class="block text-sm font-medium text-gray-700">Select Quiz/Exam File</label>
-                                    <input type="file" id="assessment-file" required class="mt-1 block w-full text-gray-700
-                                           file:mr-4 file:py-2 file:px-4
-                                           file:rounded-full file:border-0
-                                           file:text-sm file:font-semibold
-                                           file:bg-fuchsia-50 file:text-fuchsia-700
-                                           hover:file:bg-fuchsia-100 cursor-pointer">
-                                </div>
-
-                                <!-- DESCRIPTION WITH GEMINI BUTTON -->
-                                <div>
-                                    <label for="assessment-description" class="block text-sm font-medium text-gray-700">Instructions/Description</label>
-                                    <div class="flex items-center space-x-2">
-                                        <textarea id="assessment-description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-fuchsia-500 focus:border-fuchsia-500 hover:border-fuchsia-400 transition"></textarea>
-                                        <!-- GEMINI FEATURE BUTTON -->
-                                        <button type="button" onclick="draftDescription('assessment')" id="draft-assessment-desc-btn" class="bg-fuchsia-500 text-white p-3 rounded-xl text-sm font-semibold hover:bg-fuchsia-600 transition h-10 self-start mt-1 whitespace-nowrap">
-                                            ✨ Draft
-                                        </button>
-                                    </div>
-                                    <p id="draft-assessment-desc-status" class="text-xs text-gray-500 mt-1 hidden">Generating instructions with Gemini...</p>
-                                </div>
-                                
-                                <button type="submit" id="upload-assessment-btn" class="w-full bg-fuchsia-500 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition duration-150">
-                                    Publish Assessment
-                                </button>
-                                <p id="upload-assessment-status" class="mt-2 text-center text-sm text-green-600 hidden"></p>
-                            </form>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- Custom Modal for LLM Explanation -->
-        <div id="llm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden p-4">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center border-b pb-3 mb-4">
-                    <h3 id="modal-title" class="text-xl font-bold text-violet-700">AI Explanation</h3>
-                    <button onclick="closeLlmModal()" class="text-gray-400 hover:text-gray-600 transition">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                <!-- Content will be rendered here -->
-                <div id="modal-content" class="text-gray-700 prose max-w-none text-sm leading-relaxed"></div> 
-                <div id="modal-sources" class="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500"></div>
-            </div>
+      <div class="flex flex-col lg:flex-row items-center justify-between mt-16 lg:mt-24 max-w-7xl mx-auto">
+        <div class="lg:w-1/2 text-white">
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">Master Your GCSEs.</h1>
+          <p class="mt-4 text-lg text-gray-200 max-w-md">Your central hub for high-quality, curated resources and personalised learning plans for GCSEs.</p>
+          <div class="mt-8">
+            <button onclick="changeView('login')" class="btn-primary text-white font-bold py-3 px-8 rounded-xl text-lg">Start Learning Now</button>
+            <p class="mt-2 text-sm text-gray-200">Trusted by thousands of GCSE students.</p>
+          </div>
         </div>
 
-        <!-- Loading Indicator -->
-        <div id="loading-overlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="flex items-center space-x-2">
-                <div class="w-6 h-6 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-                <span class="text-lg font-medium text-violet-700">Loading EDUSTARHUB...</span>
-            </div>
+        <div class="lg:w-1/2 mt-12 lg:mt-0 flex justify-center relative">
+          <div class="w-full max-w-lg h-80 bg-violet-900 bg-opacity-30 rounded-3xl shadow-2xl flex items-center justify-center p-6">
+            <span class="absolute text-xl font-bold text-white z-10">Personalized Study Path</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-7xl mx-auto mt-20 lg:mt-32 p-4 bg-white bg-opacity-10 rounded-2xl shadow-inner">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div>
+            <h2 class="text-3xl font-bold text-white">Curated Subject Libraries</h2>
+            <p class="mt-3 text-gray-200">Direct access to curated resources for core subjects.</p>
+            <button onclick="changeView('login')" class="btn-primary text-white font-semibold mt-4 py-2 px-6 rounded-lg text-sm shadow">View Subjects</button>
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-white">Track Your Progress</h2>
+            <p class="mt-3 text-gray-200">See your streak, points and completion rates.</p>
+            <p class="mt-2 text-sm text-yellow-300">(See the dashboard after login!)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGIN -->
+    <section id="view-login" data-view="login" class="landing-gradient min-h-screen flex items-center justify-center p-4 hidden">
+      <div id="auth-card" class="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 w-full max-w-md">
+        <h2 class="text-3xl font-extrabold text-gray-900 text-center">EDUSTARHUB Portal</h2>
+        <p class="mt-2 mb-8 text-center text-gray-500">Access your personalised GCSE learning journey.</p>
+
+        <div class="border-b mb-6 pb-4">
+          <div class="flex bg-gray-100 rounded-xl p-1">
+            <button id="tab-student" data-role="student" onclick="setAuthRole('student')" class="flex-1 py-3 text-center text-sm font-semibold rounded-lg bg-violet-600 text-white">Student Login</button>
+            <button id="tab-teacher" data-role="teacher" onclick="setAuthRole('teacher')" class="flex-1 py-3 text-center text-sm font-semibold rounded-lg text-gray-600 hover:text-violet-600">Teacher Login</button>
+          </div>
         </div>
 
-    </div>
+        <form id="login-form">
+          <div class="mb-5">
+            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+            <div class="mt-1 relative rounded-lg shadow-sm">
+              <input type="text" id="username" name="username" placeholder="Enter specific username" required class="block w-full pl-3 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 sm:text-sm"/>
+            </div>
+          </div>
 
-    <!-- Firebase SDKs (compat for easier integration with this codebase) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-    <script>
-        // Firebase Configuration provided by the user
-        const firebaseConfig = {
-            apiKey: "AIzaSyD2V53PQ1jEWPoQ-trZT4XmMMhqTJTi9w8",
-            authDomain: "edustarhub-25dbf.firebaseapp.com",
-            projectId: "edustarhub-25dbf",
-            storageBucket: "edustarhub-25dbf.firebasestorage.app",
-            messagingSenderId: "929511763188",
-            appId: "1:929511763188:web:b0ad8007467a51e8cc82a1",
-            measurementId: "G-E78YNJ7SYX"
-        };
+          <div class="mb-8">
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <div class="mt-1 relative rounded-lg shadow-sm">
+              <input type="password" id="password" name="password" placeholder="••••••••" required class="block w-full pl-3 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 sm:text-sm"/>
+            </div>
+          </div>
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        // eslint-disable-next-line no-unused-vars
-        const analytics = (firebase.analytics && firebase.analytics()) || null;
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storageRef = firebase.storage().ref();
-    </script>
+          <button type="submit" id="login-btn" class="w-full btn-primary text-white font-bold py-3 rounded-xl text-lg">Sign In as <span id="login-role-text">Student</span></button>
+        </form>
 
-    <!-- APP SCRIPT - Using Firebase Auth + Firestore + Gemini API -->
-    <script>
-        // --- HARDCODED CREDENTIALS (kept only for quick role selection and display) ---
-        const CREDENTIALS = {
-            student: { username: 'EDU-Star1', password: 'EDU-Star1', displayName: 'GCSE Student' },
-            // Teacher username/password: EDU-Admin4
-            teacher: { username: 'EDU-Admin4', password: 'EDU-Admin4', displayName: 'Admin Teacher' }
-        };
-        
-        // --- GEMINI API CONFIGURATION AND FUNCTIONS ---
-        const apiKey = ""; // Provided by environment
-        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
-        const MAX_RETRIES = 5;
+        <p id="auth-error-message" class="mt-4 text-center text-sm text-red-600 hidden"></p>
+        <p id="firebase-warning" class="mt-2 text-center text-sm text-yellow-600 hidden"></p>
 
-        /**
-         * Generic function to call the Gemini API with exponential backoff.
-         * @param {string} prompt - The user query for the LLM.
-         * @param {boolean} useGrounding - Whether to use Google Search grounding.
-         * @returns {Promise<{text: string, sources: Array<{uri: string, title: string}>}>} The generated text and citation sources.
-         */
-        async function callGeminiApi(prompt, useGrounding = false) {
-            const systemInstruction = "You are a helpful and professional educational assistant for GCSE students and teachers. Keep responses concise and focused.";
-            
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: systemInstruction }] },
-            };
+        <p class="mt-6 text-center text-sm text-gray-500">Trouble logging in? <a href="#" class="font-medium text-violet-600 hover:text-violet-500">Contact support</a></p>
+        <button onclick="changeView('landing')" class="mt-4 w-full text-sm text-violet-600 hover:text-violet-500">← Back to Home</button>
+      </div>
+    </section>
 
-            if (useGrounding) {
-                payload.tools = [{ "google_search": {} }];
-            }
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" data-view="dashboard" class="min-h-screen p-4 lg:p-8 bg-dashboard-bg hidden">
+      <header class="flex justify-between items-center bg-white p-4 rounded-xl shadow-lg mb-8 sticky top-0 z-10">
+        <div class="text-2xl font-extrabold text-violet-700">EDUSTARHUB</div>
+        <div class="flex items-center space-x-3">
+          <span id="user-name" class="text-sm font-semibold text-gray-700"></span>
+          <span id="user-role" class="text-xs font-medium text-white px-2 py-1 rounded-full bg-fuchsia-500"></span>
+          <button id="logout-btn" class="text-sm text-gray-500 hover:text-red-600">Logout</button>
+        </div>
+      </header>
 
-            for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-                try {
-                    const response = await fetch(`${API_URL}?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+      <div id="dashboard-content" class="dashboard-grid max-w-7xl mx-auto">
+        <div id="dashboard-sidebar" class="bg-white p-6 rounded-2xl shadow-xl space-y-8 h-full sticky top-[6.5rem]">
+          <div id="student-nav-menu">
+            <h3 class="text-lg font-bold text-violet-700 mb-4">Study Menu</h3>
+            <nav id="sidebar-nav-student" class="space-y-2 text-base">
+              <a href="#" onclick="handleNavClickStudent(this, 'dashboard')" data-nav="dashboard" class="flex items-center p-3 rounded-xl bg-violet-100 text-violet-700 font-bold">Dashboard</a>
+              <a href="#" onclick="handleNavClickStudent(this, 'resources')" data-nav="resources" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-violet-50">Resources</a>
+              <a href="#" onclick="handleNavClickStudent(this, 'quizzes')" data-nav="quizzes" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-violet-50">Quizzes / Exams</a>
+            </nav>
+          </div>
 
-                    if (!response.ok) {
-                        // Handle error responses explicitly
-                        const errorText = await response.text();
-                        console.error("API Error:", response.status, errorText);
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+          <div id="teacher-nav-menu" class="hidden">
+            <h3 class="text-lg font-bold text-violet-700 mb-4">Management</h3>
+            <nav id="sidebar-nav-teacher" class="space-y-2 text-base">
+              <a href="#" onclick="handleNavClickTeacher(this, 'resources')" data-nav="resources" class="flex items-center p-3 rounded-xl bg-violet-100 text-violet-700 font-bold">Resources</a>
+              <a href="#" onclick="handleNavClickTeacher(this, 'assessments')" data-nav="assessments" class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-violet-50">Quizzes / Exams</a>
+            </nav>
+          </div>
 
-                    const result = await response.json();
-                    const candidate = result.candidates?.[0];
+          <div id="student-progress-section" class="space-y-4 pt-4 border-t border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800">Your Progress</h3>
+            <div class="space-y-2 text-sm">
+              <div onclick="handleUnitClick('Cells','75%')" class="interactive-card p-3 bg-green-50 rounded-xl hover:bg-green-100">Unit 1: Cells (75%)</div>
+              <div onclick="handleUnitClick('Forces','40%')" class="interactive-card p-3 bg-yellow-50 rounded-xl hover:bg-yellow-100">Unit 2: Forces (40%)</div>
+              <div onclick="handleUnitClick('Energy','10%')" class="interactive-card p-3 bg-red-50 rounded-xl hover:bg-red-100">Unit 3: Energy (10%)</div>
+            </div>
+          </div>
+        </div>
 
-                    if (candidate && candidate.content?.parts?.[0]?.text) {
-                        const text = candidate.content.parts[0].text;
-                        let sources = [];
-                        
-                        // Extract grounding sources if used
-                        const groundingMetadata = candidate.groundingMetadata;
-                        if (useGrounding && groundingMetadata && groundingMetadata.groundingAttributions) {
-                            sources = groundingMetadata.groundingAttributions
-                                .map(attribution => ({
-                                    uri: attribution.web?.uri,
-                                    title: attribution.web?.title,
-                                }))
-                                .filter(source => source.uri && source.title);
-                        }
+        <div id="main-dashboard-area">
+          <h2 id="main-content-title" class="text-2xl font-extrabold text-gray-900 mb-6">Your Today's Tasks</h2>
 
-                        return { text, sources };
-                    } else {
-                        throw new Error("Invalid response structure or empty content from API.");
-                    }
-                } catch (error) {
-                    if (attempt < MAX_RETRIES - 1) {
-                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                    } else {
-                        throw new Error("Gemini API request failed after multiple retries: " + error.message);
-                    }
-                }
-            }
-        }
-
-        // --- GLOBAL STATE ---
-        let userRole = 'student'; // Default role for login screen
-        let currentUser = null; // Firebase user object
-        let resourcesCache = []; // In-memory list of Firestore resources
-
-        // --- UTILITY FUNCTIONS ---
-        function showLoading(show) {
-            const overlay = document.getElementById('loading-overlay');
-            if (show) {
-                overlay.classList.remove('hidden');
-            } else {
-                overlay.classList.add('hidden');
-            }
-        }
-
-        function showMessage(message) {
-            // Using console log and alert fallback
-            console.log("APP MESSAGE:", message);
-            window.alert(message);
-        }
-
-        function changeView(viewId) {
-            document.querySelectorAll('[data-view]').forEach(view => {
-                view.classList.add('hidden');
-            });
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-        }
-
-        // --- INTERACTIVE HANDLERS ---
-        function handleInteractiveClick(elementName) {
-            showMessage(`Simulating action for: ${elementName}. This feature would navigate you to a detailed report or tool.`);
-        }
-        
-        /**
-         * UPDATED: Handles student sidebar navigation click and renders the correct view.
-         */
-        function handleNavClickStudent(el, viewKey) {
-            // 1. Update active state in sidebar
-            document.querySelectorAll('#sidebar-nav-student a').forEach(item => {
-                item.classList.remove('bg-violet-100', 'text-violet-700', 'font-bold');
-                item.classList.add('text-gray-700', 'hover:bg-violet-50', 'hover:text-violet-700');
-            });
-            el.classList.add('bg-violet-100', 'text-violet-700', 'font-bold');
-            el.classList.remove('text-gray-700', 'hover:bg-violet-50', 'hover:text-violet-700');
-            
-            // 2. Render the new view content
-            renderStudentView(viewKey);
-        }
-        
-        function handleNavClickTeacher(el, navKey) {
-            document.querySelectorAll('#sidebar-nav-teacher a').forEach(item => {
-                item.classList.remove('bg-violet-100', 'text-violet-700', 'font-bold');
-                item.classList.add('text-gray-700', 'hover:bg-violet-50', 'hover:text-violet-700');
-            });
-            el.classList.add('bg-violet-100', 'text-violet-700', 'font-bold');
-            el.classList.remove('text-gray-700', 'hover:bg-violet-50', 'hover:text-violet-700');
-            
-            renderTeacherContent(navKey);
-        }
-        
-        function handleUnitClick(unitName, progress) {
-            showMessage(`Accessing detail for unit '${unitName}' (Current Progress: ${progress}). Time to review!`);
-        }
-        
-        // --- LOGIN & AUTH LOGIC (localStorage) ---
-        function setAuthRole(role) {
-            userRole = role;
-            document.querySelectorAll('#auth-card button[data-role]').forEach(btn => {
-                btn.classList.remove('bg-violet-600', 'text-white', 'shadow-md');
-                btn.classList.add('text-gray-600', 'hover:text-violet-600');
-            });
-            document.getElementById(`tab-${role}`).classList.add('bg-violet-600', 'text-white', 'shadow-md');
-            document.getElementById(`tab-${role}`).classList.remove('text-gray-600', 'hover:text-violet-600');
-            document.getElementById('login-role-text').textContent = role.charAt(0).toUpperCase() + role.slice(1);
-        }
-
-        async function handleSubmitLogin(e) {
-            e.preventDefault();
-            const usernameInput = document.getElementById('username') ? document.getElementById('username').value.trim() : '';
-            const passwordInput = document.getElementById('password').value;
-            const errorMsg = document.getElementById('auth-error-message');
-            errorMsg.classList.add('hidden');
-            showLoading(true);
-            const requiredCreds = CREDENTIALS[userRole];
-            let isAuthenticated = false;
-            let displayName = 'User';
-
-            if (requiredCreds) {
-                if (usernameInput === requiredCreds.username && passwordInput === requiredCreds.password) {
-                    isAuthenticated = true;
-                    displayName = requiredCreds.displayName;
-                }
-            }
-
-            if (!isAuthenticated) {
-                errorMsg.textContent = `Invalid credentials for ${userRole}. Please use the specific ${userRole} username and password.`;
-                errorMsg.classList.remove('hidden');
-                showLoading(false);
-                return;
-            }
-
-            try {
-                // Sign-in anonymously to Firebase so we can read/write resources
-                const authResult = await auth.signInAnonymously();
-                currentUser = authResult.user;
-
-                // Use the local cred's displayName for the UI
-                setupDashboard(userRole, displayName);
-                changeView('dashboard');
-                // Migrate any localStorage resources that may exist from older versions
-                // No localStorage migration - app uses Firebase only
-            } catch (error) {
-                console.error("Auth Error:", error);
-                errorMsg.textContent = "An internal authentication error occurred. Please try again.";
-                errorMsg.classList.remove('hidden');
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        async function handleLogout() {
-            showLoading(true);
-            try {
-                await auth.signOut();
-            } catch (e) {
-                console.warn('Error signing out:', e);
-            }
-            userRole = 'student';
-            currentUser = null;
-            changeView('landing');
-            showLoading(false);
-        }
-
-        // We no longer use localStorage for auth state. Firebase auth is used instead.
-        
-        /**
-         * Initializes the dashboard based on user role.
-         */
-        function setupDashboard(role, userName) {
-            document.getElementById('user-name').textContent = userName;
-            document.getElementById('user-role').textContent = role.toUpperCase();
-            
-            const isStudent = role === 'student';
-
-            document.getElementById('student-content-container').classList.toggle('hidden', !isStudent);
-            document.getElementById('student-nav-menu').classList.toggle('hidden', !isStudent);
-            document.getElementById('student-progress-section').classList.toggle('hidden', !isStudent);
-            
-            document.getElementById('teacher-nav-menu').classList.toggle('hidden', isStudent);
-            document.getElementById('teacher-sidebar-info').classList.toggle('hidden', isStudent); 
-            document.getElementById('teacher-resources-content').classList.toggle('hidden', true); // Ensure teacher content is hidden
-            document.getElementById('teacher-assessments-content').classList.toggle('hidden', true); // Ensure teacher content is hidden
-            
-            if (isStudent) {
-                // Set default view to Dashboard
-                const defaultStudentNav = document.querySelector('#sidebar-nav-student a[data-nav="dashboard"]');
-                if (defaultStudentNav) defaultStudentNav.click(); // This calls handleNavClickStudent and renderStudentView
-            } else { // Teacher
-                document.getElementById('main-content-title').textContent = "Resource Management Center";
-                // Set default teacher nav item (Resources) as active
-                const defaultTeacherNav = document.querySelector('#sidebar-nav-teacher a[data-nav="resources"]');
-                handleNavClickTeacher(defaultTeacherNav, 'resources');
-            }
-        }
-        
-        /**
-         * Renders the main student content area based on the navigation key.
-         */
-        function renderStudentView(viewKey) {
-            const titleEl = document.getElementById('main-content-title');
-            
-            // Get all student view containers
-            const views = {
-                dashboard: document.getElementById('student-view-dashboard'),
-                resources: document.getElementById('student-view-resources'),
-                quizzes: document.getElementById('student-view-quizzes'),
-            };
-
-            // Hide all views
-            Object.values(views).forEach(view => view.classList.add('hidden'));
-
-            // Show the selected view and update title
-            if (views[viewKey]) {
-                views[viewKey].classList.remove('hidden');
-            }
-            
-            switch (viewKey) {
-                case 'dashboard':
-                    titleEl.textContent = "Your Study Dashboard";
-                    loadContentLists('dashboard'); // Loads recent content
-                    break;
-                case 'resources':
-                    titleEl.textContent = "Full Resources Library";
-                    loadContentLists('resources'); // Loads ALL resources
-                    break;
-                case 'quizzes':
-                    titleEl.textContent = "All Quizzes and Exams";
-                    loadContentLists('assessments'); // Loads ALL assessments
-                    break;
-                default:
-                    titleEl.textContent = "Welcome";
-                    break;
-            }
-        }
-
-        function renderTeacherContent(navKey) {
-            const titleEl = document.getElementById('main-content-title');
-            const resourcesContent = document.getElementById('teacher-resources-content');
-            const assessmentsContent = document.getElementById('teacher-assessments-content');
-
-            resourcesContent.classList.add('hidden');
-            assessmentsContent.classList.add('hidden');
-
-            if (navKey === 'resources') {
-                titleEl.textContent = "Upload New Study Resources";
-                resourcesContent.classList.remove('hidden');
-            } else if (navKey === 'assessments') {
-                titleEl.textContent = "Upload New Quizzes & Exams";
-                assessmentsContent.classList.remove('hidden');
-            }
-        }
-
-
-        // --- LOCAL STORAGE RESOURCE MANAGEMENT ---
-
-        // Resources are now stored in Firestore; localStorage removed.
-        
-        /**
-         * Renders content lists based on the view key.
-         * @param {string} viewKey - 'dashboard', 'resources', or 'assessments'
-         */
-        async function loadContentLists(viewKey) {
-            showLoading(true);
-            try {
-                // If we already have a live cache, use it to avoid another read
-                let allResources = resourcesCache;
-                if (!allResources || allResources.length === 0) {
-                    const snapshot = await db.collection('resources').orderBy('uploadedAt', 'desc').get();
-                    allResources = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                }
-                const studyResources = allResources.filter(r => r.type === 'resource');
-                const assessments = allResources.filter(r => r.type === 'assessment');
-
-                if (viewKey === 'dashboard') {
-                    renderList(assessments.slice(0, 3), 'dashboard-assessment-list');
-                    renderList(studyResources.slice(0, 3), 'dashboard-resource-list');
-                } else if (viewKey === 'resources') {
-                    renderList(studyResources, 'full-resource-list');
-                } else if (viewKey === 'assessments') {
-                    renderList(assessments, 'full-assessment-list');
-                }
-            } catch (error) {
-                console.error('Failed to load resources from Firestore:', error);
-                // Show fallback message
-                renderList([], 'dashboard-assessment-list');
-                renderList([], 'dashboard-resource-list');
-                renderList([], 'full-resource-list');
-                renderList([], 'full-assessment-list');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Subscribe to real-time updates from Firestore to keep UI updated
-        function subscribeToResources() {
-            try {
-                db.collection('resources').orderBy('uploadedAt', 'desc').onSnapshot(snapshot => {
-                    resourcesCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    // Re-render based on current displayed view
-                    const currentViewEl = document.querySelector('[data-view]:not(.hidden)');
-                    if (currentViewEl && currentViewEl.id === 'view-dashboard') {
-                        loadContentLists('dashboard');
-                    } else if (currentViewEl && currentViewEl.id === 'view-dashboard' && document.getElementById('student-view-resources')?.classList.contains('hidden') === false) {
-                        loadContentLists('resources');
-                    } else {
-                        // fallback: ensure dashboard lists updated
-                        loadContentLists('dashboard');
-                    }
-                }, error => {
-                    console.error('Resource subscription failed:', error);
-                });
-            } catch (e) {
-                console.warn('subscribeToResources could not be established:', e);
-            }
-        }
-
-        // No migration function: application uses Firebase only for storing resources.
-        
-        /**
-         * Renders an array of content into a specified container.
-         * @param {Array} contentArray - Array of resource/assessment objects.
-         * @param {string} containerId - The ID of the HTML element to render into.
-         */
-        function renderList(contentArray, containerId) {
-            const containerEl = document.getElementById(containerId);
-            containerEl.innerHTML = ''; 
-
-            if (contentArray.length === 0) {
-                let emptyMsg = '';
-                if (containerId.includes('assessment')) {
-                    emptyMsg = 'No quizzes or exams have been uploaded yet.';
-                } else if (containerId.includes('resource')) {
-                    emptyMsg = 'No study resources have been uploaded yet.';
-                } else {
-                    emptyMsg = 'No content available.';
-                }
-                containerEl.innerHTML = `<p class="text-gray-500 text-center py-6">${emptyMsg}</p>`;
-            } else {
-                contentArray.forEach(r => containerEl.appendChild(createResourceCard(r)));
-            }
-        }
-
-        function formatDate(value) {
-            if (!value) return 'Unknown';
-            try {
-                if (value.toDate) return value.toDate().toLocaleDateString();
-                return new Date(value).toLocaleDateString();
-            } catch (e) {
-                return String(value);
-            }
-        }
-
-        function createResourceCard(resource) {
-            const item = document.createElement('div');
-            item.className = 'flex items-start p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition duration-150 interactive-card';
-
-            let iconPath = 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.832 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.168 18 16.5 18s-3.332.477-4.5 1.253'; 
-            let bgColor = 'bg-violet-100';
-            let textColor = 'text-violet-700';
-            let itemType = 'Resource';
-
-            if (resource.type === 'assessment') {
-                iconPath = 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'; // Document icon
-                bgColor = 'bg-fuchsia-100';
-                textColor = 'text-fuchsia-700';
-                itemType = 'Assessment';
-            }
-
-            // If fileUrl is present, open it; otherwise show message
-            if (resource.fileUrl) {
-                item.addEventListener('click', () => window.open(resource.fileUrl, '_blank'));
-            } else {
-                item.setAttribute('onclick', `showMessage('You clicked the ${itemType}: ${resource.title}. The file URL is not available.')`);
-            }
-
-            item.innerHTML = `
-                <div class="p-3 ${bgColor} ${textColor} rounded-xl mr-4 flex-shrink-0">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"></path>
-                    </svg>
+          <!-- Student content container -->
+          <div id="student-content-container">
+            <div id="student-view-dashboard">
+              <div class="grid grid-cols-1 gap-6">
+                <div class="bg-violet-100 p-8 rounded-2xl shadow-xl col-span-full h-80">
+                  <h3 class="text-3xl font-bold text-violet-800">AI Study Assistant</h3>
+                  <div class="mt-8 flex gap-4">
+                    <input type="text" id="ai-topic-input" placeholder="e.g., Explain the stages of Mitosis" class="flex-grow p-4 rounded-xl border border-violet-300"/>
+                    <button onclick="explainTopic()" id="ai-explain-btn" class="bg-violet-500 text-white py-3 px-8 rounded-xl">✨ Explain Topic</button>
+                  </div>
                 </div>
-                <div class="flex-grow">
-                    <span class="text-lg font-semibold text-gray-900">${resource.title}</span>
-                    <p class="text-sm text-gray-600">${resource.description}</p>
-                    <p class="text-xs text-gray-400 mt-1">
-                        Type: <span class="font-medium ${textColor}">${itemType}</span> | Subject: ${resource.subject} | Uploaded: ${formatDate(resource.uploadedAt)}
-                    </p>
+
+                <div class="col-span-full mt-2">
+                  <h3 class="text-xl font-bold text-gray-800 mb-4">Practice Quizzes/Exams (Recent)</h3>
+                  <div id="dashboard-assessment-list" class="bg-white p-4 rounded-2xl shadow-xl space-y-3 max-h-52 custom-scroll overflow-y-auto">No assessments have been uploaded yet.</div>
                 </div>
-            `;
-            return item;
+
+                <div class="col-span-full mt-2">
+                  <h3 class="text-xl font-bold text-gray-800 mb-4">New Study Resources (Recent)</h3>
+                  <div id="dashboard-resource-list" class="bg-white p-4 rounded-2xl shadow-xl space-y-3 max-h-52 custom-scroll overflow-y-auto">No resources have been uploaded yet.</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="student-view-resources" class="hidden">
+              <div id="full-resource-list" class="bg-white p-4 rounded-2xl shadow-xl custom-scroll overflow-y-auto">Loading all resources...</div>
+            </div>
+
+            <div id="student-view-quizzes" class="hidden">
+              <div id="full-assessment-list" class="bg-white p-4 rounded-2xl shadow-xl custom-scroll overflow-y-auto">Loading all assessments...</div>
+            </div>
+          </div>
+
+          <!-- Teacher upload forms -->
+          <div id="teacher-resources-content" class="hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+              <h3 class="text-xl font-bold">Upload New Study Resource (Files, Notes, Links)</h3>
+              <form id="upload-resource-form" class="space-y-4">
+                <div>
+                  <label for="resource-title" class="block text-sm font-medium text-gray-700">Resource Title</label>
+                  <input id="resource-title" type="text" required class="w-full p-3 border border-gray-300 rounded-lg"/>
+                </div>
+                <div>
+                  <label for="resource-subject" class="block text-sm font-medium text-gray-700">Subject/Unit</label>
+                  <select id="resource-subject" required class="w-full p-3 border border-gray-300 rounded-lg">
+                    <option value="">Select a Subject</option><option value="Maths">Maths</option><option value="Science">Science</option><option value="English">English Language/Literature</option><option value="History">History</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="resource-file" class="block text-sm font-medium text-gray-700">Select File to Upload</label>
+                  <input id="resource-file" type="file" required class="w-full mt-1"/>
+                </div>
+                <div>
+                  <label for="resource-description" class="block text-sm font-medium text-gray-700">Description</label>
+                  <textarea id="resource-description" rows="3" class="w-full p-3 border border-gray-300 rounded-lg"></textarea>
+                </div>
+                <button id="upload-resource-btn" type="submit" class="w-full btn-primary text-white py-3 rounded-xl">Upload Resource</button>
+                <p id="upload-resource-status" class="mt-2 text-center text-sm text-green-600 hidden"></p>
+              </form>
+            </div>
+          </div>
+
+          <div id="teacher-assessments-content" class="hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+              <h3 class="text-xl font-bold">Upload New Quiz / Exam Paper (Assessments)</h3>
+              <form id="upload-assessment-form" class="space-y-4">
+                <div>
+                  <label for="assessment-title">Assessment Title</label>
+                  <input id="assessment-title" type="text" required class="w-full p-3 border border-gray-300 rounded-lg"/>
+                </div>
+                <div>
+                  <label for="assessment-subject">Subject/Unit</label>
+                  <select id="assessment-subject" required class="w-full p-3 border border-gray-300 rounded-lg">
+                    <option value="">Select a Subject</option><option>Maths</option><option>Science</option><option>English</option><option>History</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="assessment-file">Select Quiz/Exam File</label>
+                  <input id="assessment-file" type="file" required class="w-full mt-1"/>
+                </div>
+                <div>
+                  <label for="assessment-description">Instructions/Description</label>
+                  <textarea id="assessment-description" rows="3" class="w-full p-3 border border-gray-300 rounded-lg"></textarea>
+                </div>
+                <button id="upload-assessment-btn" type="submit" class="w-full bg-fuchsia-500 text-white py-3 rounded-xl">Publish Assessment</button>
+                <p id="upload-assessment-status" class="mt-2 text-center text-sm text-green-600 hidden"></p>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- App script: localStorage based, no Firebase -->
+  <script>
+    // --- HARDCODED CREDENTIALS ---
+    const CREDENTIALS = {
+      student: { username: 'EDU-Star1', password: 'EDU-Star1', displayName: 'GCSE Student' },
+      teacher: { username: 'EDU-Admin4', password: 'EDU-Admin4', displayName: 'Admin Teacher' }
+    };
+
+    // Local storage keys
+    const SESSION_KEY = 'edustar_user';
+    const RESOURCES_KEY = 'edustarhub_resources';
+
+    // GLOBAL STATE
+    let userRole = 'student';
+    let currentUser = null;
+    let resourcesCache = [];
+
+    // UTILS
+    function showLoading(show) {
+      const o = document.getElementById('loading-overlay'); if (!o) return;
+      show ? o.classList.remove('hidden') : o.classList.add('hidden');
+    }
+    function showMessage(msg) {
+      console.log('APP MESSAGE:', msg); window.alert(msg);
+    }
+    function changeView(viewId) {
+      document.querySelectorAll('[data-view]').forEach(v => v.classList.add('hidden'));
+      document.getElementById('view-' + viewId).classList.remove('hidden');
+    }
+
+    // SESSION helpers
+    function setLocalSession(role, username, displayName) {
+      const session = { role, username, displayName, loggedAt: new Date().toISOString() };
+      try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (e) { console.warn('localStorage set session failed', e); }
+    }
+    function getLocalSession() {
+      try { const raw = localStorage.getItem(SESSION_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { console.warn(e); return null; }
+    }
+    function clearLocalSession() { try { localStorage.removeItem(SESSION_KEY); } catch (e) { console.warn(e); } }
+
+    // Resources helpers (localStorage)
+    function getResourcesFromStorage() {
+      try {
+        const raw = localStorage.getItem(RESOURCES_KEY);
+        if (!raw) return [];
+        return JSON.parse(raw);
+      } catch (e) {
+        console.warn('Failed to read resources from localStorage', e);
+        return [];
+      }
+    }
+    function saveResourcesToStorage(resources) {
+      try { localStorage.setItem(RESOURCES_KEY, JSON.stringify(resources)); } catch (e) { console.warn('Failed to write resources to localStorage', e); }
+    }
+    function loadCachedResources() {
+      resourcesCache = getResourcesFromStorage() || [];
+    }
+
+    // Format date helper
+    function formatDate(value) {
+      if (!value) return 'Unknown';
+      try { return new Date(value).toLocaleString(); } catch (e) { return String(value); }
+    }
+
+    // Create resource card (click opens data URL in new tab)
+    function createResourceCard(resource) {
+      const item = document.createElement('div');
+      item.className = 'flex items-start p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition duration-150 interactive-card';
+
+      const iconPath = resource.type === 'assessment' ? 'M9 12h6m-6 4h6' : 'M12 6.253v13';
+      const bgColor = resource.type === 'assessment' ? 'bg-fuchsia-100' : 'bg-violet-100';
+      const textColor = resource.type === 'assessment' ? 'text-fuchsia-700' : 'text-violet-700';
+      const itemType = resource.type === 'assessment' ? 'Assessment' : 'Resource';
+
+      const left = document.createElement('div');
+      left.className = `p-3 ${bgColor} ${textColor} rounded-xl mr-4 flex-shrink-0`;
+      left.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"></path></svg>`;
+
+      const body = document.createElement('div');
+      body.className = 'flex-grow';
+      body.innerHTML = `<span class="text-lg font-semibold text-gray-900">${resource.title}</span>
+          <p class="text-sm text-gray-600">${resource.description}</p>
+          <p class="text-xs text-gray-400 mt-1">Type: <span class="font-medium ${textColor}">${itemType}</span> | Subject: ${resource.subject} | Uploaded: ${formatDate(resource.uploadedAt)}</p>`;
+
+      if (resource.fileUrl) {
+        item.addEventListener('click', () => window.open(resource.fileUrl));
+      } else {
+        item.addEventListener('click', () => showMessage(`You clicked the ${itemType}: ${resource.title}, but file URL is not available.`));
+      }
+
+      item.appendChild(left);
+      item.appendChild(body);
+      return item;
+    }
+
+    function renderList(contentArray, containerId) {
+      const containerEl = document.getElementById(containerId);
+      containerEl.innerHTML = '';
+      if (!contentArray || contentArray.length === 0) {
+        const msg = containerId.includes('assessment') ? 'No quizzes or exams have been uploaded yet.' :
+                    containerId.includes('resource') ? 'No study resources have been uploaded yet.' : 'No content available.';
+        containerEl.innerHTML = `<p class="text-gray-500 text-center py-6">${msg}</p>`;
+      } else {
+        contentArray.forEach(r => containerEl.appendChild(createResourceCard(r)));
+      }
+    }
+
+    // Load content lists from local cache
+    async function loadContentLists(viewKey) {
+      showLoading(true);
+      try {
+        loadCachedResources();
+        const studyResources = resourcesCache.filter(r => r.type === 'resource');
+        const assessments = resourcesCache.filter(r => r.type === 'assessment');
+
+        if (viewKey === 'dashboard') {
+          renderList(assessments.slice(0,3), 'dashboard-assessment-list');
+          renderList(studyResources.slice(0,3), 'dashboard-resource-list');
+        } else if (viewKey === 'resources') {
+          renderList(studyResources, 'full-resource-list');
+        } else if (viewKey === 'assessments') {
+          renderList(assessments, 'full-assessment-list');
         }
+      } catch (err) {
+        console.error('Error loading content lists (local):', err);
+        renderList([], 'dashboard-assessment-list'); renderList([], 'dashboard-resource-list'); renderList([], 'full-resource-list'); renderList([], 'full-assessment-list');
+      } finally { showLoading(false); }
+    }
 
+    // Upload handler: read file as DataURL and store locally in resources
+    async function handleUpload(e, type) {
+      e.preventDefault();
+      const titleId = type === 'resource' ? 'resource-title' : 'assessment-title';
+      const subjectId = type === 'resource' ? 'resource-subject' : 'assessment-subject';
+      const descriptionId = type === 'resource' ? 'resource-description' : 'assessment-description';
+      const fileId = type === 'resource' ? 'resource-file' : 'assessment-file';
+      const btnId = type === 'resource' ? 'upload-resource-btn' : 'upload-assessment-btn';
+      const statusId = type === 'resource' ? 'upload-resource-status' : 'upload-assessment-status';
 
-        async function handleUpload(e, type) {
-            e.preventDefault();
-            
-            const titleId = type === 'resource' ? 'resource-title' : 'assessment-title';
-            const subjectId = type === 'resource' ? 'resource-subject' : 'assessment-subject';
-            const descriptionId = type === 'resource' ? 'resource-description' : 'assessment-description';
-            const fileId = type === 'resource' ? 'resource-file' : 'assessment-file';
-            const btnId = type === 'resource' ? 'upload-resource-btn' : 'upload-assessment-btn';
-            const statusId = type === 'resource' ? 'upload-resource-status' : 'upload-assessment-status';
+      const uploadBtn = document.getElementById(btnId);
+      const statusMsg = document.getElementById(statusId);
+      uploadBtn.disabled = true; statusMsg.classList.add('hidden');
 
-            const uploadBtn = document.getElementById(btnId);
-            const statusMsg = document.getElementById(statusId);
-            
-            uploadBtn.disabled = true;
-            statusMsg.classList.remove('text-red-600', 'text-green-600');
-            statusMsg.classList.add('hidden');
-            uploadBtn.textContent = 'Publishing...';
+      try {
+        const title = document.getElementById(titleId).value;
+        const subject = document.getElementById(subjectId).value;
+        const description = document.getElementById(descriptionId).value;
+        const fileInput = document.getElementById(fileId);
+        const file = fileInput.files[0];
 
-            try {
-                const title = document.getElementById(titleId).value;
-                const subject = document.getElementById(subjectId).value;
-                const description = document.getElementById(descriptionId).value;
+        if (!file) throw new Error(`Please select a file to upload for the ${type}.`);
 
-                const fileInput = document.getElementById(fileId);
-                const file = fileInput.files[0];
-
-                if (!file) {
-                    throw new Error(`Please select a file to upload for the ${type}.`);
-                }
-
-                // Upload file to Firebase Storage
-                const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
-                const path = `resources/${safeFileName}`;
-                const fileRef = storageRef.child(path);
-
-                const uploadTaskSnapshot = await fileRef.put(file);
-                const downloadUrl = await uploadTaskSnapshot.ref.getDownloadURL();
-
-                const newResource = {
-                    type: type, // 'resource' or 'assessment'
-                    title: title,
-                    subject: subject,
-                    fileName: file.name,
-                    fileType: file.type,
-                    fileSize: file.size,
-                    description: description,
-                    fileUrl: downloadUrl,
-                    uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    uploaderRole: userRole,
-                    uploaderId: currentUser ? currentUser.uid : null
-                };
-
-                // Save metadata to Firestore
-                await db.collection('resources').add(newResource);
-
-                statusMsg.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} metadata for '${file.name}' published successfully!`;
-                statusMsg.classList.remove('hidden');
-                statusMsg.classList.add('text-green-600');
-                document.getElementById(`upload-${type}-form`).reset();
-
-                // Refresh lists
-                loadContentLists('dashboard');
-            } catch (error) {
-                console.error("Upload failed:", error);
-                statusMsg.textContent = `Upload failed: ${error.message}`;
-                statusMsg.classList.remove('hidden');
-                statusMsg.classList.add('text-red-600');
-            } finally {
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = type === 'resource' ? 'Upload Resource' : 'Publish Assessment';
-            }
-        }
-
-        // --- GEMINI TEACHER FEATURE: DRAFT DESCRIPTION ---
-
-        async function draftDescription(type) {
-            const titleId = type === 'resource' ? 'resource-title' : 'assessment-title';
-            const subjectId = type === 'resource' ? 'resource-subject' : 'assessment-subject';
-            const descriptionTextareaId = type === 'resource' ? 'resource-description' : 'assessment-description';
-            const statusId = type === 'resource' ? 'draft-resource-desc-status' : 'draft-assessment-desc-status';
-            const draftBtnId = type === 'resource' ? 'draft-resource-desc-btn' : 'draft-assessment-desc-btn';
-
-
-            const title = document.getElementById(titleId).value;
-            const subject = document.getElementById(subjectId).value;
-            const descriptionTextarea = document.getElementById(descriptionTextareaId);
-            const statusEl = document.getElementById(statusId);
-            const draftBtn = document.getElementById(draftBtnId);
-
-            if (!title || !subject) {
-                statusEl.textContent = "Please enter a Title and select a Subject first.";
-                statusEl.classList.remove('hidden', 'text-green-600', 'text-gray-500');
-                statusEl.classList.add('text-red-600');
-                return;
-            }
-
-            draftBtn.disabled = true;
-            draftBtn.textContent = 'Drafting...';
-            statusEl.textContent = `Generating ${type} description with Gemini...`;
-            statusEl.classList.remove('hidden', 'text-red-600'); 
-            statusEl.classList.add('text-gray-500');
-            
-            const promptType = type === 'resource' ? 'concise, engaging, and professional description for a student to use for revision' : 'set of clear instructions for a student completing this assessment';
-            const prompt = `Generate a ${promptType} for a GCSE ${subject} ${type} titled: "${title}". The text should be 2-3 short sentences long. Do not include any titles, headers, or markdown formatting (like asterisks or bolding).`;
-
-            try {
-                const { text } = await callGeminiApi(prompt, false); // No grounding needed for creative description
-                descriptionTextarea.value = text.trim();
-                statusEl.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} description drafted successfully.`;
-                statusEl.classList.remove('text-gray-500', 'text-red-600');
-                statusEl.classList.add('text-green-600');
-            } catch (e) {
-                console.error("Gemini API Error:", e);
-                statusEl.textContent = 'Error drafting description. Try again.';
-                statusEl.classList.remove('text-gray-500', 'text-green-600');
-                statusEl.classList.add('text-red-600');
-            } finally {
-                draftBtn.disabled = false;
-                draftBtn.textContent = '✨ Draft';
-            }
-        }
-
-        // --- GEMINI STUDENT FEATURE: EXPLAIN TOPIC ---
-
-        function showLlmModal(title, content, sources) {
-            document.getElementById('modal-title').textContent = title;
-            const contentEl = document.getElementById('modal-content');
-            
-            // Basic Markdown to HTML conversion for bullet points and bolding
-            if (content) {
-                let formattedContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                formattedContent = formattedContent.replace(/^- (.*)/gm, '<li>$1</li>');
-                formattedContent = formattedContent.replace(/\n\n/g, '<p></p>'); // Paragraph breaks
-                formattedContent = formattedContent.replace(/\n/g, '<br>'); // Line breaks
-                contentEl.innerHTML = formattedContent;
-            } else {
-                 contentEl.innerHTML = '<p>No content provided.</p>';
-            }
-
-
-            const sourcesEl = document.getElementById('modal-sources');
-            sourcesEl.innerHTML = ''; 
-
-            if (sources && sources.length > 0) {
-                sourcesEl.innerHTML = '<strong>Grounded Sources:</strong><ul class="list-disc pl-5 mt-1 space-y-0.5">' + 
-                    sources.map(s => `<li><a href="${s.uri}" target="_blank" class="text-blue-500 hover:underline">${s.title}</a></li>`).join('') + 
-                    '</ul>';
-            } else {
-                sourcesEl.innerHTML = 'No external sources cited for this response.';
-            }
-            
-            document.getElementById('llm-modal').classList.remove('hidden');
-        }
-
-        function closeLlmModal() {
-            document.getElementById('llm-modal').classList.add('hidden');
-        }
-
-        async function explainTopic() {
-            const topicInput = document.getElementById('ai-topic-input');
-            const explainBtn = document.getElementById('ai-explain-btn');
-            const topic = topicInput.value.trim();
-            if (!topic) {
-                showMessage("Please enter a topic (like 'Photosynthesis' or 'The Treaty of Versailles') to explain.");
-                return;
-            }
-            
-            // Visual Loading State
-            explainBtn.disabled = true;
-            explainBtn.textContent = "Thinking...";
-            showLoading(true);
-
-            const prompt = `Explain the GCSE-level concept of "${topic}" in a simple, easy-to-understand manner suitable for a 15-year-old student. Use brief paragraphs and use markdown bullet points for key facts.`;
-
-            try {
-                const { text, sources } = await callGeminiApi(prompt, true); // Use grounding for factual explanation
-                
-                showLlmModal(`Explaining: ${topic}`, text, sources);
-
-            } catch (e) {
-                console.error("Gemini API Error:", e);
-                showLlmModal(`Error with: ${topic}`, `<p class="text-red-600">Sorry, the AI study assistant encountered an error: ${e.message}. Please check your connection and try again.</p>`, []);
-            } finally {
-                showLoading(false);
-                explainBtn.disabled = false;
-                explainBtn.textContent = "✨ Explain Topic";
-            }
-        }
-
-        // --- EVENT LISTENERS & INITIAL CALLS ---
-        document.addEventListener('DOMContentLoaded', () => {
-            setAuthRole('student');
-            // Show landing page immediately while Firebase auth resolves to avoid a blank screen
-            changeView('landing');
-            document.getElementById('login-form').addEventListener('submit', handleSubmitLogin);
-            document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
-            
-            // Teacher Upload Forms
-            document.getElementById('upload-resource-form').addEventListener('submit', (e) => handleUpload(e, 'resource'));
-            document.getElementById('upload-assessment-form').addEventListener('submit', (e) => handleUpload(e, 'assessment'));
-            
-            // Use Firebase auth state to determine whether to show dashboard or landing
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    currentUser = user;
-                    const displayName = (CREDENTIALS[userRole] && CREDENTIALS[userRole].displayName) || user.displayName || 'User';
-                    setupDashboard(userRole, displayName);
-                    changeView('dashboard');
-                    // Load content for dashboard
-                    loadContentLists('dashboard');
-                    // Subscribe to Firestore resource updates
-                    subscribeToResources();
-                } else {
-                    currentUser = null;
-                    changeView('landing');
-                }
-            });
+        // Read file as DataURL (base64) using FileReader
+        const fileDataUrl = await new Promise((resolve, reject) => {
+          const fr = new FileReader();
+          fr.onload = () => resolve(fr.result);
+          fr.onerror = () => reject(new Error('Failed to read file'));
+          fr.readAsDataURL(file);
         });
-    </script>
+
+        const newResource = {
+          id: `local-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+          type,
+          title,
+          subject,
+          description,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          fileUrl: fileDataUrl, // base64 data URL
+          uploadedAt: new Date().toISOString(),
+          uploaderRole: userRole,
+          uploaderId: (currentUser && currentUser.uid) ? currentUser.uid : `local-${userRole}`
+        };
+
+        // Save to local storage resources
+        loadCachedResources();
+        resourcesCache.unshift(newResource); // newest first
+        saveResourcesToStorage(resourcesCache);
+
+        statusMsg.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} '${file.name}' uploaded successfully!`;
+        statusMsg.classList.remove('hidden'); statusMsg.classList.remove('text-red-600'); statusMsg.classList.add('text-green-600');
+
+        // Reset form
+        document.getElementById(`upload-${type}-form`).reset();
+
+        // Refresh lists
+        await loadContentLists('dashboard');
+      } catch (err) {
+        console.error('Upload failed:', err);
+        statusMsg.textContent = `Upload failed: ${err.message}`;
+        statusMsg.classList.remove('hidden'); statusMsg.classList.add('text-red-600');
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    }
+
+    // Login using local credentials & localStorage session (no Firebase)
+    async function handleSubmitLogin(e) {
+      e.preventDefault();
+      const usernameInput = document.getElementById('username') ? document.getElementById('username').value.trim() : '';
+      const passwordInput = document.getElementById('password') ? document.getElementById('password').value : '';
+      const errorMsg = document.getElementById('auth-error-message');
+      errorMsg.classList.add('hidden');
+      showLoading(true);
+
+      const requiredCreds = CREDENTIALS[userRole];
+      let isAuthenticated = false;
+      let displayName = 'User';
+
+      if (requiredCreds) {
+        if (usernameInput === requiredCreds.username && passwordInput === requiredCreds.password) {
+          isAuthenticated = true;
+          displayName = requiredCreds.displayName;
+        }
+      }
+
+      if (!isAuthenticated) {
+        errorMsg.textContent = `Invalid credentials for ${userRole}. Please use the specific ${userRole} username and password.`;
+        errorMsg.classList.remove('hidden');
+        showLoading(false);
+        return;
+      }
+
+      // Save local session - persists across reloads
+      setLocalSession(userRole, usernameInput, displayName);
+
+      // Set local currentUser placeholder
+      currentUser = { uid: `local-${userRole}-${Date.now()}`, displayName, isLocal: true };
+
+      // Set up UI & load lists
+      setupDashboard(userRole, displayName);
+      changeView('dashboard');
+      await loadContentLists('dashboard');
+
+      showLoading(false);
+    }
+
+    // Logout - clear local session
+    async function handleLogout() {
+      showLoading(true);
+      clearLocalSession();
+      userRole = 'student';
+      currentUser = null;
+      changeView('landing');
+      showLoading(false);
+    }
+
+    function setAuthRole(role) {
+      userRole = role;
+      document.querySelectorAll('#auth-card button[data-role]').forEach(btn => btn.classList.remove('bg-violet-600', 'text-white', 'shadow-md'));
+      document.querySelectorAll('#auth-card button[data-role]').forEach(btn => btn.classList.add('text-gray-600', 'hover:text-violet-600'));
+      document.getElementById(`tab-${role}`).classList.add('bg-violet-600', 'text-white', 'shadow-md');
+      document.getElementById('login-role-text').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+    }
+
+    // Setup UI on login
+    function setupDashboard(role, userName) {
+      document.getElementById('user-name').textContent = userName;
+      document.getElementById('user-role').textContent = role.toUpperCase();
+
+      const isStudent = role === 'student';
+      document.getElementById('student-content-container').classList.toggle('hidden', !isStudent);
+      document.getElementById('student-nav-menu').classList.toggle('hidden', !isStudent);
+      document.getElementById('teacher-nav-menu').classList.toggle('hidden', isStudent);
+      document.getElementById('teacher-sidebar-info').classList.toggle('hidden', isStudent);
+      // Teacher UI hide/display for upload sections
+      document.getElementById('teacher-resources-content').classList.toggle('hidden', isStudent);
+      document.getElementById('teacher-assessments-content').classList.toggle('hidden', isStudent);
+
+      if (isStudent) {
+        const defaultStudentNav = document.querySelector('#sidebar-nav-student a[data-nav="dashboard"]'); if (defaultStudentNav) defaultStudentNav.click();
+      } else {
+        document.getElementById('main-content-title').textContent = "Resource Management Center";
+        const defaultTeacherNav = document.querySelector('#sidebar-nav-teacher a[data-nav="resources"]');
+        if (defaultTeacherNav) handleNavClickTeacher(defaultTeacherNav, 'resources');
+      }
+    }
+
+    function handleNavClickStudent(el, viewKey) {
+      document.querySelectorAll('#sidebar-nav-student a').forEach(item => item.classList.remove('bg-violet-100', 'text-violet-700', 'font-bold'));
+      document.querySelectorAll('#sidebar-nav-student a').forEach(item => item.classList.add('text-gray-700', 'hover:bg-violet-50'));
+      el.classList.add('bg-violet-100', 'text-violet-700', 'font-bold');
+      el.classList.remove('text-gray-700', 'hover:bg-violet-50');
+      renderStudentView(viewKey);
+    }
+    function handleNavClickTeacher(el, navKey) {
+      document.querySelectorAll('#sidebar-nav-teacher a').forEach(item => item.classList.remove('bg-violet-100', 'text-violet-700', 'font-bold'));
+      document.querySelectorAll('#sidebar-nav-teacher a').forEach(item => item.classList.add('text-gray-700', 'hover:bg-violet-50'));
+      el.classList.add('bg-violet-100', 'text-violet-700', 'font-bold');
+      el.classList.remove('text-gray-700', 'hover:bg-violet-50');
+      renderTeacherContent(navKey);
+    }
+
+    function renderStudentView(viewKey) {
+      const views = { dashboard: document.getElementById('student-view-dashboard'), resources: document.getElementById('student-view-resources'), quizzes: document.getElementById('student-view-quizzes') };
+      Object.values(views).forEach(v => v.classList.add('hidden'));
+      if (views[viewKey]) views[viewKey].classList.remove('hidden');
+      const titleEl = document.getElementById('main-content-title');
+      if (viewKey === 'dashboard') { titleEl.textContent = 'Your Study Dashboard'; loadContentLists('dashboard'); }
+      else if (viewKey === 'resources') { titleEl.textContent = 'Full Resources Library'; loadContentLists('resources'); }
+      else { titleEl.textContent = 'All Quizzes and Exams'; loadContentLists('assessments'); }
+    }
+
+    function renderTeacherContent(navKey) {
+      const titleEl = document.getElementById('main-content-title');
+      const resourcesContent = document.getElementById('teacher-resources-content');
+      const assessmentsContent = document.getElementById('teacher-assessments-content');
+      resourcesContent.classList.add('hidden'); assessmentsContent.classList.add('hidden');
+      if (navKey === 'resources') { titleEl.textContent = 'Upload New Study Resources'; resourcesContent.classList.remove('hidden'); }
+      else if (navKey === 'assessments') { titleEl.textContent = 'Upload New Quizzes & Exams'; assessmentsContent.classList.remove('hidden'); }
+    }
+
+    // Load session & attach event listeners on start
+    document.addEventListener('DOMContentLoaded', async () => {
+      setAuthRole('student');
+      changeView('landing');
+
+      document.getElementById('login-form').addEventListener('submit', handleSubmitLogin);
+      document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+      document.getElementById('upload-resource-form').addEventListener('submit', (e) => handleUpload(e, 'resource'));
+      document.getElementById('upload-assessment-form').addEventListener('submit', (e) => handleUpload(e, 'assessment'));
+
+      // restore session if local
+      const session = getLocalSession();
+      if (session && session.role) {
+        userRole = session.role;
+        setAuthRole(userRole);
+        currentUser = { uid: `local-${userRole}-${Date.now()}`, displayName: session.displayName || (CREDENTIALS[userRole] && CREDENTIALS[userRole].displayName) };
+        setupDashboard(userRole, currentUser.displayName);
+        changeView('dashboard');
+        await loadContentLists('dashboard');
+      } else {
+        changeView('landing');
+      }
+    });
+
+  </script>
 </body>
 </html>
