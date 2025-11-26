@@ -377,7 +377,7 @@
                                            file:bg-violet-50 file:text-violet-700
                                            hover:file:bg-violet-100 cursor-pointer">
                                     <p class="text-xs text-gray-500 mt-1">
-                                        <span class="font-bold text-red-600">Note:</span> Files are stored locally in your browser (metadata only) and cannot be shared or downloaded due to local storage limitations.
+                                        <span class="font-bold text-green-600">Note:</span> Uploaded files are stored in Firebase Storage and will be available to students via the dashboard.
                                     </p>
                                 </div>
 
@@ -698,7 +698,7 @@
                 setupDashboard(userRole, displayName);
                 changeView('dashboard');
                 // Migrate any localStorage resources that may exist from older versions
-                try { await migrateLocalResourcesToFirestore(); } catch (e) { console.warn('Migration failed (ignored):', e); }
+                // No localStorage migration - app uses Firebase only
             } catch (error) {
                 console.error("Auth Error:", error);
                 errorMsg.textContent = "An internal authentication error occurred. Please try again.";
@@ -874,45 +874,7 @@
             }
         }
 
-        async function migrateLocalResourcesToFirestore() {
-            const resourcesJson = localStorage.getItem('edustarhub_resources');
-            if (!resourcesJson) return; // Nothing to migrate
-
-            try {
-                const oldResources = JSON.parse(resourcesJson);
-                if (!Array.isArray(oldResources) || oldResources.length === 0) {
-                    localStorage.removeItem('edustarhub_resources');
-                    return;
-                }
-
-                // Only migrate if we can write to the collection
-                const writeChecks = oldResources.map(async r => {
-                    // Try to add minimal metadata (files cannot be uploaded because they are not available)
-                    const migratedResource = {
-                        type: r.type || 'resource',
-                        title: r.title || r.fileName || 'Untitled',
-                        subject: r.subject || 'General',
-                        fileName: r.fileName || null,
-                        description: r.description || '',
-                        fileType: r.fileType || null,
-                        fileSize: r.fileSize || null,
-                        fileUrl: r.fileUrl || null,
-                        uploadedAt: r.uploadedAt || new Date().toISOString(),
-                        migratedFromLocalStorage: true,
-                        uploaderRole: r.uploaderRole || 'teacher'
-                    };
-                    await db.collection('resources').add(migratedResource);
-                });
-
-                await Promise.all(writeChecks);
-                // Migration completed, remove the local storage
-                localStorage.removeItem('edustarhub_resources');
-                console.log('Local resources migrated to Firestore (if any).');
-            } catch (error) {
-                console.error('Migration to Firestore failed:', error);
-                // leave local storage alone if migration fails
-            }
-        }
+        // No migration function: application uses Firebase only for storing resources.
         
         /**
          * Renders an array of content into a specified container.
@@ -935,6 +897,16 @@
                 containerEl.innerHTML = `<p class="text-gray-500 text-center py-6">${emptyMsg}</p>`;
             } else {
                 contentArray.forEach(r => containerEl.appendChild(createResourceCard(r)));
+            }
+        }
+
+        function formatDate(value) {
+            if (!value) return 'Unknown';
+            try {
+                if (value.toDate) return value.toDate().toLocaleDateString();
+                return new Date(value).toLocaleDateString();
+            } catch (e) {
+                return String(value);
             }
         }
 
@@ -971,7 +943,7 @@
                     <span class="text-lg font-semibold text-gray-900">${resource.title}</span>
                     <p class="text-sm text-gray-600">${resource.description}</p>
                     <p class="text-xs text-gray-400 mt-1">
-                        Type: <span class="font-medium ${textColor}">${itemType}</span> | Subject: ${resource.subject} | Uploaded: ${new Date(resource.uploadedAt).toLocaleDateString()}
+                        Type: <span class="font-medium ${textColor}">${itemType}</span> | Subject: ${resource.subject} | Uploaded: ${formatDate(resource.uploadedAt)}
                     </p>
                 </div>
             `;
@@ -979,7 +951,7 @@
         }
 
 
-        function handleUpload(e, type) {
+        async function handleUpload(e, type) {
             e.preventDefault();
             
             const titleId = type === 'resource' ? 'resource-title' : 'assessment-title';
@@ -1026,7 +998,7 @@
                     fileSize: file.size,
                     description: description,
                     fileUrl: downloadUrl,
-                    uploadedAt: new Date().toISOString(),
+                    uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     uploaderRole: userRole,
                     uploaderId: currentUser ? currentUser.uid : null
                 };
@@ -1171,6 +1143,8 @@
         // --- EVENT LISTENERS & INITIAL CALLS ---
         document.addEventListener('DOMContentLoaded', () => {
             setAuthRole('student');
+            // Show landing page immediately while Firebase auth resolves to avoid a blank screen
+            changeView('landing');
             document.getElementById('login-form').addEventListener('submit', handleSubmitLogin);
             document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
             
