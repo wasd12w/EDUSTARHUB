@@ -591,6 +591,7 @@
         // --- GLOBAL STATE ---
         let userRole = 'student'; // Default role for login screen
         let currentUser = null; // Firebase user object
+        let resourcesCache = []; // In-memory list of Firestore resources
 
         // --- UTILITY FUNCTIONS ---
         function showLoading(show) {
@@ -696,6 +697,8 @@
                 // Use the local cred's displayName for the UI
                 setupDashboard(userRole, displayName);
                 changeView('dashboard');
+                // Migrate any localStorage resources that may exist from older versions
+                try { await migrateLocalResourcesToFirestore(); } catch (e) { console.warn('Migration failed (ignored):', e); }
             } catch (error) {
                 console.error("Auth Error:", error);
                 errorMsg.textContent = "An internal authentication error occurred. Please try again.";
@@ -819,8 +822,12 @@
         async function loadContentLists(viewKey) {
             showLoading(true);
             try {
-                const snapshot = await db.collection('resources').orderBy('uploadedAt', 'desc').get();
-                const allResources = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                // If we already have a live cache, use it to avoid another read
+                let allResources = resourcesCache;
+                if (!allResources || allResources.length === 0) {
+                    const snapshot = await db.collection('resources').orderBy('uploadedAt', 'desc').get();
+                    allResources = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                }
                 const studyResources = allResources.filter(r => r.type === 'resource');
                 const assessments = allResources.filter(r => r.type === 'assessment');
 
@@ -841,6 +848,69 @@
                 renderList([], 'full-assessment-list');
             } finally {
                 showLoading(false);
+            }
+        }
+
+        // Subscribe to real-time updates from Firestore to keep UI updated
+        function subscribeToResources() {
+            try {
+                db.collection('resources').orderBy('uploadedAt', 'desc').onSnapshot(snapshot => {
+                    resourcesCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    // Re-render based on current displayed view
+                    const currentViewEl = document.querySelector('[data-view]:not(.hidden)');
+                    if (currentViewEl && currentViewEl.id === 'view-dashboard') {
+                        loadContentLists('dashboard');
+                    } else if (currentViewEl && currentViewEl.id === 'view-dashboard' && document.getElementById('student-view-resources')?.classList.contains('hidden') === false) {
+                        loadContentLists('resources');
+                    } else {
+                        // fallback: ensure dashboard lists updated
+                        loadContentLists('dashboard');
+                    }
+                }, error => {
+                    console.error('Resource subscription failed:', error);
+                });
+            } catch (e) {
+                console.warn('subscribeToResources could not be established:', e);
+            }
+        }
+
+        async function migrateLocalResourcesToFirestore() {
+            const resourcesJson = localStorage.getItem('edustarhub_resources');
+            if (!resourcesJson) return; // Nothing to migrate
+
+            try {
+                const oldResources = JSON.parse(resourcesJson);
+                if (!Array.isArray(oldResources) || oldResources.length === 0) {
+                    localStorage.removeItem('edustarhub_resources');
+                    return;
+                }
+
+                // Only migrate if we can write to the collection
+                const writeChecks = oldResources.map(async r => {
+                    // Try to add minimal metadata (files cannot be uploaded because they are not available)
+                    const migratedResource = {
+                        type: r.type || 'resource',
+                        title: r.title || r.fileName || 'Untitled',
+                        subject: r.subject || 'General',
+                        fileName: r.fileName || null,
+                        description: r.description || '',
+                        fileType: r.fileType || null,
+                        fileSize: r.fileSize || null,
+                        fileUrl: r.fileUrl || null,
+                        uploadedAt: r.uploadedAt || new Date().toISOString(),
+                        migratedFromLocalStorage: true,
+                        uploaderRole: r.uploaderRole || 'teacher'
+                    };
+                    await db.collection('resources').add(migratedResource);
+                });
+
+                await Promise.all(writeChecks);
+                // Migration completed, remove the local storage
+                localStorage.removeItem('edustarhub_resources');
+                console.log('Local resources migrated to Firestore (if any).');
+            } catch (error) {
+                console.error('Migration to Firestore failed:', error);
+                // leave local storage alone if migration fails
             }
         }
         
@@ -1117,6 +1187,8 @@
                     changeView('dashboard');
                     // Load content for dashboard
                     loadContentLists('dashboard');
+                    // Subscribe to Firestore resource updates
+                    subscribeToResources();
                 } else {
                     currentUser = null;
                     changeView('landing');
